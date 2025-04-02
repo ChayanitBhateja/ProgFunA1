@@ -1,64 +1,292 @@
-# Part 1
-# Defining different Rent Prices
-RENT1 = 0.5
-RENT2 = 0.4
+# RMIT Book Rental System Assingment 1
 # Defining Discount
 DISCOUNT = 0.1
 
 # List of customers
 customers = [{'name': 'Emily', 'member': True},{'name':'James', 'member':False}]
 
-# List of Books
-books = [
+# List of books with following  data in dictionary
+list_of_books = [
     {
-        "name": "Programming FUndamentals",
-        "price": 10,
-        "rented": False,
+        "category": "Fantasy",
+        "type": "rental",
+        "books": ["Harry Potter", "The Hobbit"],
+        "rent": [0.5, 0.4],
     },
     {
-        "name": "Pythonn",
-        "price": 10,
-        "rented": False,
+        "category": "Crime",
+        "type": "rental",
+        "books": ["Gone Girl", "Sherlock Holmes 1 "],
+        "rent": [0.5, 0.4],
+    },
+    {
+        "category": "Classics",
+        "type": "rental",
+        "books": ["Pride and Prejudice"],
+        "rent": [0.3, 0.25],
+    },
+    {
+        "category": "Modern Classics",
+        "type": "rental",
+        "books": ["To Kill a Mockingbird"],
+        "rent": [0.4, 0.3],
+    },
+    {
+        "category": "History",
+        "type": "rental",
+        "books": ["The Diary of a Young Girl"],
+        "rent": [0.4, 0.3],
+    },
+    {
+        "category": "Philosophy",
+        "type": "rental",
+        "books": ["The Republic"],
+        "rent": [0.3, 0.25],
+    },
+    {
+        "category": "Science",
+        "type": "rental",
+        "books": ["A Brief History of Time"],
+        "rent": [0.5, 0.4],
+    },
+    {
+        "category": "Textbooks",
+        "type": "reference",
+        "books": ["Introduction to the Theory of Computation"],
+        "rent": [0.75, 0.6],
+    },
+    {
+        "category": "Art",
+        "type": "rental",
+        "books": ["The Story of Art"],
+        "rent": [0.5, 0.4],
+    },
+    {
+        "category": "Other",
+        "type": "reference",
+        "books": ["Thinking Fast and Slow", "Atomic Habits"],
+        "rent": [0.5, 0.4],
     },
 ]
 
-# Inputting Name
-print("Please Enter your Name: ")
-name = input()
+books_to_rent = []
 
-# Inputting Book Name
-print("Enter the name of the book you want to rent: ")
-book = input()
+# validate if the input string contains only alphabets
+def validate_input(name):
+    if isinstance(name, str) and name.replace(" ", "").isalpha():
+        return True
+    return False
 
-# Inputting Days to rent
-print("Enter the number of days you want to rent the book for:")
-days = int(input())
+def validate_book(entered_book):
+    found_book = [book for book in list_of_books if entered_book in book['books']]
+    return found_book[0]
 
-# Calculating total amount based on days to rent
-total_amount = 0
-if(days <= 10):
-    total_amount = days * RENT1
-else:
-    total_amount = days * RENT2
+def validate_days(days, bookset):
+    if bool(isinstance(days, int) and days > 0):
+        if(bookset['type'] == 'reference' and days > 14):
+            print('Cannot Rent this book for more than 14 days')
+            return False
+        return True
+    return False
 
-# Calculating discount and printing final output
-final_amount = 0 
-if name in [customer['name'] for customer in customers] and [customer['member'] for customer in customers if customer['name'] == name][0]:
-    final_amount = total_amount * (1 - DISCOUNT)
-    print("------------------------------------------------------------------------------------------ ")
+def print_reciept(name, books_to_rent, is_member):
+    gross_total_amount = 0
+    gross_final_amount = 0
+    print("-"*80)
     print(f"Receipt for {name} ")
-    print("------------------------------------------------------------------------------------------ ")
-    print(f"Books rented: -  {book} for {days} days ({total_amount/days} AUD/day)")
-    print("------------------------------------------------------------------------------------------ ")
-    print(f"Original cost:             {total_amount} (AUD) ")
-    print(f"Discount:                  {total_amount * (DISCOUNT)} (AUD) ")
-    print(f"Total cost:                {final_amount} (AUD) ")
-else:
-    final_amount = total_amount
-    print("------------------------------------------------------------------------------------------ ")
-    print(f"Books rented: -  {book} for {days} days ({total_amount/days} AUD/day)")
-    print("------------------------------------------------------------------------------------------ ")
-    print(f"Original cost:              {total_amount} (AUD) ")
-    print(f"Discount:                   0 (AUD) ")
-    print(f"Total cost::                {final_amount} (AUD/day) ")
-    print("------------------------------------------------------------------------------------------ ")
+    print("-" * 80)
+    print("Books Rented")
+    for book in books_to_rent:
+        print(f"\t-  {book['name']} for {book['days']} days ({book['total_amount']/book['days']} AUD/day)")
+        gross_total_amount += book['total_amount']
+        gross_final_amount += book['final_amount']
+    print("-"*80)
+    print(f"Original cost:             {gross_total_amount:.2f} (AUD) ")
+    if is_member:
+        print(f"Discount:                  {(gross_total_amount * DISCOUNT):.2f} (AUD) ")
+    else:
+        print(f"Discount:                   0.00 (AUD) ")
+    print(f"Total cost:                {gross_final_amount:.2f} (AUD) ")
+    print("-"*80)
+
+def enter_customer_name():
+    # Inputting Name
+    print("Please Enter your Name: ")
+    name = input().strip()
+
+    while not validate_input(name):
+        print("Invalid Name. Please Enter valid name(use Alphabets only): ")
+        name = input().strip()
+    return name
+def rent_a_book(name):
+    # Inputting Book Name
+    print("Enter the name of the book you want to rent: ")
+    book = input().strip()
+    found_bookset = validate_book(book)
+    while not len(found_bookset) > 0:
+        print("Invalid Book Name. Please Enter valid name(use Alphabets only): ")
+        book = input().strip()
+        found_bookset = validate_book(book)
+
+    # Inputting Days to rent
+    print("Enter the number of days you want to rent the book for:")
+    try:
+        days = int(input().strip())
+    except:
+        print("Invalid Days(use numbers only)")
+    finally:
+        while not validate_days(days, found_bookset):
+            print("Invalid Input. Please Enter a valid number of days:")
+            days = int(input().strip())
+    # Calculating total amount based on days to rent
+    total_amount = 0
+    if(days <= 10):        
+        total_amount = days * found_bookset['rent'][0]
+    else:        
+        total_amount = days * found_bookset["rent"][1]
+
+    # Calculating discount and printing final output
+    final_amount = 0 
+    memberFlag = False
+    if name in [customer['name'] for customer in customers] and [customer['member'] for customer in customers if customer['name'] == name][0]:
+        final_amount = total_amount * (1 - DISCOUNT)
+        memberFlag = True
+    else:
+        final_amount = total_amount
+    global books_to_rent
+    books_to_rent.append({'name':book, 'days': days, 'total_amount': total_amount, 'final_amount': final_amount})
+    # Ask user if they want to rent another book
+    print("Do you want to rent another book? YES(y)/NO(n): ")
+    another_book = input().strip().lower()
+    while another_book not in ['y', 'n']:
+        print("Invalid Input. Please Enter valid choice(y/n):")
+        another_book = input().strip().lower()
+    if another_book == 'y':
+            rent_a_book()
+    elif another_book == 'n':
+        for customer in customers:
+            if customer['name'] == name:
+                if 'rentals' in customer.keys():
+                    customer['rentals'] = customer['rentals'].append(books_to_rent)
+                else:
+                    customer['rentals'] = [books_to_rent]
+        print_reciept(name,books_to_rent, memberFlag)  
+        books_to_rent = []      
+        if name not in [customer['name'] for customer in customers]:
+            print('Do you wish to become a member Yes/No: ')
+            wannabeMember = input()
+            customers.append({'name': name, 'member': True if wannabeMember.lower() == 'yes' else False})
+
+
+def update_book_category():
+    validated = False
+    while not validated:
+        print("enter updated data as category, type, rent1, rent2")
+        inp = input().strip()
+        category, type, rent1, rent2 = inp.strip().split(',')
+        if category.strip() not in [book['category'] for book in list_of_books]:
+            print("Invalid Input. Please Enter a valid category:")
+        elif type.strip() not in ["rental", "reference"]:
+            print("Type of Book is not recognised! Try Again.")
+        else:
+            try:
+                float(rent1)
+                float(rent2)
+            except ValueError:
+                print("Rent must be a floating number!")
+            else:
+                validated = True
+                
+    for book in list_of_books:
+        if book['category'] == category:
+            book['type'] = type.strip()
+            book['rent'] = [float(rent1), float(rent2)]
+            print('Updated!')
+            break
+
+
+def update_books():
+    print("Do you want to add(A) or remove(R) a book (a/r): ")
+    inp = input().strip()
+    print("Enter book category, list of books(book1, book2): ")
+    inputs = input().strip().split(',')
+    inputs = [value.strip() for value in inputs]
+    category, booksList = inputs[0], inputs[1:]
+    if inp.lower() == 'a':
+        for book in list_of_books:
+            if book['category'] == category:
+                book['books'].extend(booksList)
+                print('Added!')
+                break
+    elif inp.lower() == 'r':
+        for book in list_of_books:
+            if book['category'] == category:
+                book['books'] = [b for b in book['books'] if b not in booksList]
+                print('Removed!')
+                break
+
+def display_customers():
+    print(f'{"Name":<20}{"Membership":<15}')
+    print("-"*50)
+    for customer in customers:
+        print(f'{customer["name"]:<20}{customer["member"]:<15}')
+    print("-"*50+"\n\n")
+
+def display_book_categories():
+    print(f"{'Category':<20} {'Type':<15} {'Books':<50} {'Rent'}")
+    print("-"*100)
+    for book in list_of_books:
+        category = book['category']
+        book_type = book['type']
+        books = ", ".join(book['books'])
+        rent = ",".join([str(r) for r in book['rent']])
+        print(f"{category:<20} {book_type:<15} {books:<50} {rent}")    
+    print("-"*100+"\n\n")
+
+def display_most_valuable_customer():
+    pass
+
+def display_customer_rental_history():
+    pass
+
+
+def menu():
+    print('Welcome to RMIT book Rental System')
+    print()
+    print("#######################################")
+    print("You can choose from following options: ")
+    print("1. Rent a book")
+    print("2. Update information of a book category")
+    print("3. Update books of a book category")
+    print("4. Display existing customer")
+    print("5. Display existing book categories")
+    print("6. Display the most valueable customer")
+    print("7. Display a customer rental history")
+    print("8. Exit")
+    print("#######################################")
+    print()
+    choice = int(input("Please select an option: "))
+    
+    if choice == 1:
+        name = enter_customer_name()
+        rent_a_book(name)
+    elif choice == 2:
+        update_book_category()
+    elif choice == 3: 
+        update_books()
+    elif choice == 4: 
+        display_customers()
+    elif choice == 5:
+        display_book_categories()
+    elif choice == 6:
+        display_most_valuable_customer()
+    elif choice == 7:
+        display_customer_rental_history()
+    elif choice == 8:
+        print("Goodbye!")
+        exit()
+    else:
+        print("Invalid choice. Please try again.")
+
+while True:
+    menu()
