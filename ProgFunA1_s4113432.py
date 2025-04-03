@@ -77,10 +77,12 @@ def validate_input(name):
         return True
     return False
 
+# validate if the book name is in the list of books
 def validate_book(entered_book):
     found_book = [book for book in list_of_books if entered_book in book['books']]
-    return found_book[0]
+    return found_book[0] if len(found_book) > 0 else []
 
+# validate if the number of days is valid
 def validate_days(days, bookset):
     if bool(isinstance(days, int) and days > 0):
         if(bookset['type'] == 'reference' and days > 14):
@@ -89,6 +91,7 @@ def validate_days(days, bookset):
         return True
     return False
 
+# Print the receipt for the rented books
 def print_reciept(name, books_to_rent, is_member):
     gross_total_amount = 0
     gross_final_amount = 0
@@ -109,6 +112,7 @@ def print_reciept(name, books_to_rent, is_member):
     print(f"Total cost:                {gross_final_amount:.2f} (AUD) ")
     print("-"*80)
 
+# Function to enter customer name and validate it
 def enter_customer_name():
     # Inputting Name
     print("Please Enter your Name: ")
@@ -118,6 +122,8 @@ def enter_customer_name():
         print("Invalid Name. Please Enter valid name(use Alphabets only): ")
         name = input().strip()
     return name
+
+# Function to rent a book
 def rent_a_book(name):
     # Inputting Book Name
     print("Enter the name of the book you want to rent: ")
@@ -162,22 +168,22 @@ def rent_a_book(name):
         print("Invalid Input. Please Enter valid choice(y/n):")
         another_book = input().strip().lower()
     if another_book == 'y':
-            rent_a_book()
+            rent_a_book(name)
     elif another_book == 'n':
         for customer in customers:
-            if customer['name'] == name:
-                if 'rentals' in customer.keys():
-                    customer['rentals'] = customer['rentals'].append(books_to_rent)
+            if customer['name'] == name:                
+                if 'rentals' in customer.keys():                    
+                    customer['rentals'].append(books_to_rent)
                 else:
                     customer['rentals'] = [books_to_rent]
         print_reciept(name,books_to_rent, memberFlag)  
-        books_to_rent = []      
         if name not in [customer['name'] for customer in customers]:
             print('Do you wish to become a member Yes/No: ')
             wannabeMember = input()
-            customers.append({'name': name, 'member': True if wannabeMember.lower() == 'yes' else False})
+            customers.append({'name': name, 'member': True if wannabeMember.lower() == 'yes' else False, 'rentals': [books_to_rent]})
+    books_to_rent = []      
 
-
+# Function to update book category
 def update_book_category():
     validated = False
     while not validated:
@@ -186,7 +192,7 @@ def update_book_category():
         category, type, rent1, rent2 = inp.strip().split(',')
         if category.strip() not in [book['category'] for book in list_of_books]:
             print("Invalid Input. Please Enter a valid category:")
-        elif type.strip() not in ["rental", "reference"]:
+        elif type.strip().lower() not in ["rental", "reference"]:
             print("Type of Book is not recognised! Try Again.")
         else:
             try:
@@ -199,28 +205,44 @@ def update_book_category():
                 
     for book in list_of_books:
         if book['category'] == category:
-            book['type'] = type.strip()
+            book['type'] = type.strip().lower()
             book['rent'] = [float(rent1), float(rent2)]
             print('Updated!')
             break
 
 
 def update_books():
-    print("Do you want to add(A) or remove(R) a book (a/r): ")
-    inp = input().strip()
+    inp = ''
+    while inp.strip().lower() not in ['a','r']:
+        print("Do you want to add(A) or remove(R) a book (a/r): ")
+        inp = input().strip()
+        if(inp.strip().lower() not in ['a','r']):
+            print("Wrong input, enter either a or r")
     print("Enter book category, list of books(book1, book2): ")
     inputs = input().strip().split(',')
     inputs = [value.strip() for value in inputs]
     category, booksList = inputs[0], inputs[1:]
     if inp.lower() == 'a':
+        not_new_books = []
         for book in list_of_books:
             if book['category'] == category:
+                for new_book in booksList:
+                    if new_book in book['books']:
+                        not_new_books.append(new_book)                
+                if len(not_new_books) > 0:
+                    print('Following books will not be added as they are already in Stock')
+                    for nnb in not_new_books:
+                        print(f'\t- {nnb}')
+                booksList = [bk for bk in booksList if bk not in not_new_books]                    
                 book['books'].extend(booksList)
-                print('Added!')
+                print('Added new books!')
                 break
     elif inp.lower() == 'r':
         for book in list_of_books:
             if book['category'] == category:
+                for b in booksList:
+                    if b not in book['books']:
+                        print(f'{b} don\'t exist in the stock.')
                 book['books'] = [b for b in book['books'] if b not in booksList]
                 print('Removed!')
                 break
@@ -244,10 +266,43 @@ def display_book_categories():
     print("-"*100+"\n\n")
 
 def display_most_valuable_customer():
-    pass
+    most_valuable_customer = None
+    max_rent = 0
+    for customer in customers:
+        if 'rentals' in customer.keys():  
+            total_rent = 0       
+            for rental in customer['rentals']:   
+                total_rent = sum([book['final_amount'] for book in rental])
+            if total_rent > max_rent:
+                max_rent = total_rent
+                most_valuable_customer = customer['name']
+    if most_valuable_customer:
+        print(f"Most valuable customer is {most_valuable_customer} with a total rent of {max_rent:.2f} AUD")
+    else:
+        print("No rentals found.")
 
 def display_customer_rental_history():
-    pass
+    name = enter_customer_name()
+    for customer in customers:
+        if customer['name'].lower() == name.strip().lower():
+            if 'rentals' in customer.keys():
+                print(f"\nRental history for {name}:")
+                print("-" * 120)
+                print(f"{'Rental #':<10} {'Books Rented':<70} {'Total Amount':<15} {'Discount':<15} {'Final Amount':<15}")
+                print("-" * 120)
+                for index, rental in enumerate(customer['rentals']):
+                    rental_books_info = ", ".join([f"{book['name']} | {book['days']} days" for book in rental])
+                    total_amount = sum([book['total_amount'] for book in rental])
+                    discount = sum([(book['total_amount'] - book['final_amount']) for book in rental])
+                    final_amount = sum([book['final_amount'] for book in rental])
+
+                    print(f"{index + 1:<10} {rental_books_info:<70} {f"{total_amount:.2f} AUD":<15} {f"{discount:.2f} AUD":<15} {f"{final_amount:.2f} AUD":<15}")
+                    print("-" * 120)
+            else:
+                print(f"No rentals found for {name}.")
+            break
+    else:
+        print(f"{name} not found.")
 
 
 def menu():
@@ -265,8 +320,16 @@ def menu():
     print("8. Exit")
     print("#######################################")
     print()
-    choice = int(input("Please select an option: "))
-    
+
+    choice = 0
+    while choice not in range(1, 8):
+        try:
+            choice = int(input("Please select an option: "))
+            if choice > 8 or choice < 1:
+                print("Invalid choice. Please try again.")
+        except ValueError:
+            print('Invalid Input. Please Enter a valid number')
+
     if choice == 1:
         name = enter_customer_name()
         rent_a_book(name)
@@ -285,8 +348,7 @@ def menu():
     elif choice == 8:
         print("Goodbye!")
         exit()
-    else:
-        print("Invalid choice. Please try again.")
 
+# Main program loop
 while True:
     menu()
