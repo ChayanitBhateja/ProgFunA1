@@ -1,4 +1,18 @@
-# RMIT Book Rental System Assingment 1
+# Chayanit Bhateja - s4113432
+# Highest Attempted Module - Part 3
+# Analysis and Reflection:
+'''
+I approached this problem point by point. At first I started by scripting and then as the requirement moved forward, I started to create functions.
+Started by creating validation functions with a viewpoint to more clean, reusable, and readable code. Then When we moved to the part of menu driven program,
+There I created functions of all the code chunks That served the purpose of every menu option. I also created a function to display the menu and call the functions based on user input.
+Did rigrous testing and debugging to make sure the code is working as expected and handle all the possible use cases.
+
+My whole thought process was to make the code clean and readable, so that it can be easily understood and modified in the future.
+That's the same I learned from this assignment that your code should NOT be just a working file but it should be flexible and reusable, so that it can be easily modified in the future.
+'''
+# References:
+# Stackoverflow.com
+
 # Defining Discount
 DISCOUNT = 0.1
 
@@ -164,6 +178,8 @@ def rent_a_book(name):
     # Ask user if they want to rent another book
     print("Do you want to rent another book? YES(y)/NO(n): ")
     another_book = input().strip().lower()
+
+    # Logic to ask for another bok and printing reciept
     while another_book not in ['y', 'n']:
         print("Invalid Input. Please Enter valid choice(y/n):")
         another_book = input().strip().lower()
@@ -210,7 +226,7 @@ def update_book_category():
             print('Updated!')
             break
 
-
+# Function to update books in a category
 def update_books():
     inp = ''
     while inp.strip().lower() not in ['a','r']:
@@ -247,6 +263,7 @@ def update_books():
                 print('Removed!')
                 break
 
+# Function to display existing customers
 def display_customers():
     print(f'{"Name":<20}{"Membership":<15}')
     print("-"*50)
@@ -254,6 +271,7 @@ def display_customers():
         print(f'{customer["name"]:<20}{customer["member"]:<15}')
     print("-"*50+"\n\n")
 
+# Function to display book categories
 def display_book_categories():
     print(f"{'Category':<20} {'Type':<15} {'Books':<50} {'Rent'}")
     print("-"*100)
@@ -265,6 +283,7 @@ def display_book_categories():
         print(f"{category:<20} {book_type:<15} {books:<50} {rent}")    
     print("-"*100+"\n\n")
 
+# Function to display the most valuable customer
 def display_most_valuable_customer():
     most_valuable_customer = None
     max_rent = 0
@@ -281,6 +300,7 @@ def display_most_valuable_customer():
     else:
         print("No rentals found.")
 
+# Function to display a customer's rental history
 def display_customer_rental_history():
     name = enter_customer_name()
     for customer in customers:
@@ -305,6 +325,7 @@ def display_customer_rental_history():
         print(f"{name} not found.")
 
 
+# Menu driven program
 def menu():
     print('Welcome to RMIT book Rental System')
     print()
