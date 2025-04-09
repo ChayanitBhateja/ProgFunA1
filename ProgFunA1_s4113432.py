@@ -322,7 +322,7 @@ def menu():
     print()
 
     choice = 0
-    while choice not in range(1, 8):
+    while choice not in range(1, 9):
         try:
             choice = int(input("Please select an option: "))
             if choice > 8 or choice < 1:
